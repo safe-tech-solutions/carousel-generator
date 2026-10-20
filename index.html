@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Carrossel - Celsosre</title>
+    <title>Gerador de Carrossel 2.0 - Celsosre</title>
     <!-- Tailwind CSS para design moderno e responsivo -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts Inter -->
@@ -24,18 +24,30 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-between p-4 md:p-8">
 
-    <header class="w-full max-w-5xl mx-auto text-center mb-6">
+    <header class="w-full max-w-6xl mx-auto text-center mb-6">
         <div class="inline-block bg-amber-500/10 text-amber-400 text-xs font-semibold px-3.5 py-1.5 rounded-full mb-2 border border-amber-500/20">
             Série SRE do Zero • @celsosre
         </div>
-        <h1 class="text-2xl md:text-3xl font-bold text-white">Gerador de Carrossel para Instagram</h1>
-        <p class="text-slate-400 text-sm mt-1">Interface simplificada e sem sobrecarga. Edite os textos, veja o preview e baixe em PNG de alta resolução.</p>
+        <h1 class="text-2xl md:text-3xl font-bold text-white">Gerador de Carrossel 2.0 com Importação Inteligente</h1>
+        <p class="text-slate-400 text-sm mt-1">Cole seu texto bruto abaixo para estruturar os slides e gerar a legenda automaticamente.</p>
     </header>
 
-    <main class="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <main class="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        <!-- Coluna de Controles -->
+        <!-- Coluna Esquerda: Importador e Edição -->
         <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col gap-6">
+            
+            <!-- Seção de Importação de Conteúdo Bruto -->
+            <div class="flex flex-col gap-2 border-b border-slate-800 pb-5">
+                <h2 class="font-semibold text-sm text-amber-400 flex items-center gap-2">
+                    <span>📥</span> Importar Conteúdo Bruto
+                </h2>
+                <textarea id="input-raw-content" rows="4" placeholder="Cole aqui o texto completo com o título, subtítulos e comandos..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition resize-none leading-relaxed"></textarea>
+                <button onclick="parseRawContent()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-semibold py-2 px-3 rounded-xl border border-amber-500/30 text-xs transition flex items-center justify-center gap-2">
+                    ✨ Processar Texto em Slides e Legenda
+                </button>
+            </div>
+
             <div class="flex items-center justify-between border-b border-slate-800 pb-4">
                 <h2 class="font-semibold text-lg text-amber-400 flex items-center gap-2">
                     <span>🛠️</span> Painel de Edição
@@ -43,7 +55,7 @@
                 <span id="slide-indicator" class="text-xs bg-slate-800 text-amber-300 px-3 py-1 rounded-md font-semibold">Slide 1 de 4</span>
             </div>
 
-            <!-- Navegação -->
+            <!-- Navegação de Slides -->
             <div class="flex items-center justify-between gap-3">
                 <button id="btn-prev" onclick="changeSlide(-1)" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed">
                     ← Anterior
@@ -53,15 +65,12 @@
                 </button>
             </div>
 
-            <!-- Seletores diretos -->
-            <div class="grid grid-cols-4 gap-2">
-                <button onclick="setSlide(0)" class="slide-thumb-btn py-2.5 text-xs font-semibold rounded-lg bg-amber-500 text-slate-950 transition" data-index="0">1. Capa</button>
-                <button onclick="setSlide(1)" class="slide-thumb-btn py-2.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition" data-index="1">2. Manhã</button>
-                <button onclick="setSlide(2)" class="slide-thumb-btn py-2.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition" data-index="2">3. Dia</button>
-                <button onclick="setSlide(3)" class="slide-thumb-btn py-2.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition" data-index="3">4. CTA</button>
+            <!-- Seletores Dinâmicos de Slides -->
+            <div id="thumbs-container" class="grid grid-cols-5 gap-1.5">
+                <!-- Gerado via Script -->
             </div>
 
-            <!-- Campos de texto -->
+            <!-- Campos de texto do Slide Atual -->
             <div class="flex flex-col gap-4">
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">Título do Slide:</label>
@@ -69,103 +78,192 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">Texto Principal:</label>
-                    <textarea id="input-body" rows="6" oninput="updateCurrentSlideContent()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-amber-500 transition resize-none leading-relaxed"></textarea>
+                    <textarea id="input-body" rows="5" oninput="updateCurrentSlideContent()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-amber-500 transition resize-none leading-relaxed"></textarea>
                 </div>
             </div>
 
-            <!-- Botão de Download Direto via Canvas Nativo -->
-            <button onclick="downloadSlideAsPNG()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-base">
-                <span>📥</span> Baixar Slide Atual em PNG
-            </button>
+            <!-- Botões de Ação -->
+            <div class="flex flex-col gap-3">
+                <button onclick="downloadSlideAsPNG()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-base">
+                    <span>📥</span> Baixar Slide Atual em PNG
+                </button>
+                <button onclick="downloadAllSlides()" class="w-full bg-slate-800 hover:bg-slate-700 text-amber-400 font-semibold py-2.5 px-4 rounded-xl border border-slate-700 transition flex items-center justify-center gap-2 text-sm">
+                    <span>📦</span> Baixar Todos os Slides (Sequencial)
+                </button>
+            </div>
         </div>
 
-        <!-- Coluna de Visualização -->
-        <div class="lg:col-span-7 flex flex-col items-center justify-center">
-            <div class="text-xs text-slate-400 mb-2 flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Preview em tempo real (Formato Instagram 4:5)
-            </div>
+        <!-- Coluna Direta: Preview e Legenda Gerada -->
+        <div class="lg:col-span-7 flex flex-col gap-6 items-center justify-center">
+            
+            <div class="flex flex-col items-center justify-center w-full">
+                <div class="text-xs text-slate-400 mb-2 flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Preview em tempo real (Formato Instagram 4:5)
+                </div>
 
-            <!-- Contêiner do Preview -->
-            <div class="relative w-full max-w-[380px] aspect-[4/5] bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-slate-800 flex items-center justify-center">
-                
-                <!-- SLIDE REAL EM ALTA RESOLUÇÃO (1080x1350 escalado) -->
-                <div id="slide-capture-area" class="instagram-slide absolute top-0 left-0 bg-gradient-to-br from-slate-950 via-slate-900 to-zinc-950 text-white p-16 flex flex-col justify-between border-[16px] border-slate-900 select-none" style="transform: scale(0.3518); transform-origin: top left;">
+                <!-- Contêiner do Preview -->
+                <div class="relative w-full max-w-[360px] aspect-[4/5] bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-slate-800 flex items-center justify-center">
                     
-                    <!-- Topo: Logotipo Real -->
-                    <div class="flex items-center justify-between w-full border-b border-amber-500/20 pb-8">
-                        <div class="flex items-center gap-4">
-                            <!-- Imagem do Logotipo Real -->
-                            <img src="logo.png" alt="Celsosre Logo" class="w-20 h-20 rounded-full border-2 border-amber-500/70 object-cover shadow-lg shrink-0">
-                            <div>
-                                <h3 class="text-2xl font-bold tracking-wider text-amber-400">CELSOSRE</h3>
-                                <p class="text-sm tracking-widest text-slate-400 uppercase">Série SRE do Zero</p>
+                    <!-- SLIDE REAL EM ALTA RESOLUÇÃO (1080x1350 escalado) -->
+                    <div id="slide-capture-area" class="instagram-slide absolute top-0 left-0 bg-gradient-to-br from-slate-950 via-slate-900 to-zinc-950 text-white p-16 flex flex-col justify-between border-[16px] border-slate-900 select-none" style="transform: scale(0.333); transform-origin: top left;">
+                        
+                        <!-- Topo: Logotipo Real -->
+                        <div class="flex items-center justify-between w-full border-b border-amber-500/20 pb-8">
+                            <div class="flex items-center gap-4">
+                                <img src="logo.png" alt="Celsosre Logo" class="w-20 h-20 rounded-full border-2 border-amber-500/70 object-cover shadow-lg shrink-0">
+                                <div>
+                                    <h3 class="text-2xl font-bold tracking-wider text-amber-400">CELSOSRE</h3>
+                                    <p class="text-sm tracking-widest text-slate-400 uppercase">Série SRE do Zero</p>
+                                </div>
+                            </div>
+                            <div class="bg-amber-500/10 text-amber-400 font-semibold text-lg px-6 py-2.5 rounded-full border border-amber-500/30 slide-badge-num">
+                                Slide 01
                             </div>
                         </div>
-                        <div class="bg-amber-500/10 text-amber-400 font-semibold text-lg px-6 py-2.5 rounded-full border border-amber-500/30 slide-badge-num">
-                            Slide 01
+
+                        <!-- Centro: Conteúdo dinâmico -->
+                        <div class="my-auto py-12 flex flex-col justify-center">
+                            <h2 id="render-title" class="text-6xl font-extrabold text-white leading-tight mb-8 tracking-tight">
+                                Título do Slide
+                            </h2>
+                            <div id="render-body" class="text-3xl text-slate-300 font-normal leading-relaxed whitespace-pre-line">
+                                Corpo do texto...
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Centro: Conteúdo dinâmico -->
-                    <div class="my-auto py-12 flex flex-col justify-center">
-                        <h2 id="render-title" class="text-6xl font-extrabold text-white leading-tight mb-8 tracking-tight">
-                            Um dia real na vida de um SRE junior
-                        </h2>
-                        <div id="render-body" class="text-3xl text-slate-300 font-normal leading-relaxed whitespace-pre-line">
-                            Série SRE do Zero
+                        <!-- Rodapé -->
+                        <div class="flex items-center justify-between w-full pt-8 border-t border-slate-800/80 text-xl text-slate-400 font-medium">
+                            <span id="render-footer-handle" class="text-amber-400 font-semibold">@celsosre</span>
+                            <span id="render-footer-url" class="text-slate-500">devyra.com.br</span>
                         </div>
-                    </div>
 
-                    <!-- Rodapé -->
-                    <div class="flex items-center justify-between w-full pt-8 border-t border-slate-800/80 text-xl text-slate-400 font-medium">
-                        <span id="render-footer-handle" class="text-amber-400 font-semibold">@celsosre</span>
-                        <span id="render-footer-url" class="text-slate-500">devyra.com.br</span>
                     </div>
-
                 </div>
             </div>
-            
-            <p class="text-xs text-slate-500 mt-3 text-center">Exportação direta e sem falhas em 1080x1350 pixels com o seu logo oficial.</p>
+
+            <!-- Caixa de Legenda Pronta Gerada -->
+            <div class="w-full bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-semibold text-sm text-amber-400 flex items-center gap-2">
+                        <span>📝</span> Legenda Pronta para o Instagram
+                    </h3>
+                    <button onclick="copyCaption()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium py-1.5 px-3 rounded-lg transition flex items-center gap-1.5">
+                        <span>📋</span> Copiar Legenda
+                    </button>
+                </div>
+                <textarea id="output-caption" rows="5" readonly class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-300 focus:outline-none resize-none leading-relaxed"></textarea>
+            </div>
+
         </div>
 
     </main>
 
     <script>
-        // Conteúdo estruturado para os 4 slides
-        const slidesData = [
+        // Dados iniciais de exemplo (DNS e Portas)
+        let slidesData = [
             {
-                title: "Um dia real na vida de um SRE junior",
-                body: "Série SRE do Zero"
+                title: "🔌 DNS e Portas TCP/UDP",
+                body: "DNS, sockets e investigação de conectividade.\n\nSérie SRE do Zero"
             },
             {
-                title: "De manhã",
-                body: "O dia começa antes de qualquer reunião.\n\nVocê abre o painel de monitoramento.\nVerifica se algum alerta disparou durante a noite.\nCheca se os sistemas estão respondendo.\n\nIsso se chama observabilidade. E é parte do trabalho todo dia."
+                title: "Diagnóstico DNS",
+                body: "DNS resolve nomes para IPs. Se um IP funciona mas o nome falha, investigue o DNS:\n\nnslookup google.com\ndig google.com A\ndig google.com AAAA\ncat /etc/resolv.conf\ngetent hosts google.com"
             },
             {
-                title: "Durante o dia",
-                body: "Não tem dois dias iguais.\n\nPode ser uma reunião de postmortem — entender o que quebrou e por quê.\nPode ser automatizar uma tarefa que alguém fazia na mão.\nPode ser um incidente chegando sem avisar.\n\nO SRE junior aprende fazendo. Muitas vezes no meio do caos."
+                title: "Investigando Portas",
+                body: "O comando ss visualiza sockets TCP/UDP. 127.0.0.1 é loopback, 0.0.0.0 escuta em todas as interfaces.\n\nss -tuln\nsudo ss -tulnp\nss -tn state established\nnc -vz -w 3 127.0.0.1 22"
             },
             {
-                title: "O que mais te surpreende nessa rotina?",
-                body: "Comenta aqui 👇\n\nPróximo post: SRE vs DevOps. Qual a diferença?\n\nSegue pra não perder 👉 @celsosre\ndevyra.com.br"
+                title: "💡 Prática Profissional",
+                body: "Execute os comandos de consulta em um ambiente Linux de laboratório e registre o que cada resultado significa.\n\nNão realize alterações em servidores de produção sem autorização."
+            },
+            {
+                title: "💡 O que você achou?",
+                body: "Comente qual comando de rede você mais usa no dia a dia 👇\n\nSegue pra não perder 👉 @celsosre\ndevyra.com.br"
             }
         ];
 
         let currentSlideIndex = 0;
 
         window.addEventListener('DOMContentLoaded', () => {
+            renderThumbnails();
             loadSlideIntoForm(currentSlideIndex);
             updatePreview();
-            updateNavigationButtons();
+            generateCaption();
         });
+
+        // Função inteligente para processar texto bruto colado
+        function parseRawContent() {
+            const rawText = document.getElementById('input-raw-content').value.trim();
+            if (!rawText) {
+                alert("Por favor, cole um texto para processar.");
+                return;
+            }
+
+            const lines = rawText.split('\n').map(l => l.trim()).filter(l => l !== '');
+            if (lines.length === 0) return;
+
+            let extractedSlides = [];
+            let currentTitle = lines[0];
+            let currentBodyLines = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                let line = lines[i];
+                // Detecta novas seções baseadas em capitalização ou termos chaves
+                if (line.toLowerCase().startsWith('diagnóstico') || 
+                    line.toLowerCase().startsWith('investigando') || 
+                    line.toLowerCase().startsWith('interfaces') ||
+                    line.toLowerCase().startsWith('verificar') ||
+                    line.toLowerCase().startsWith('prática')) {
+                    
+                    if (currentBodyLines.length > 0 || currentTitle) {
+                        extractedSlides.push({
+                            title: currentTitle,
+                            body: currentBodyLines.join('\n')
+                        });
+                    }
+                    currentTitle = line;
+                    currentBodyLines = [];
+                } else {
+                    currentBodyLines.push(line);
+                }
+            }
+
+            // Adiciona o último bloco
+            if (currentTitle) {
+                extractedSlides.push({
+                    title: currentTitle,
+                    body: currentBodyLines.join('\n')
+                });
+            }
+
+            // Garante ao menos a Capa e o CTA se faltarem
+            if (extractedSlides.length === 0) {
+                extractedSlides.push({ title: lines[0], body: lines.slice(1).join('\n') });
+            }
+
+            // Adiciona slide de CTA padrão no final se não houver
+            extractedSlides.push({
+                title: "💡 Prática e Próximos Passos",
+                body: "Pratique em ambiente de laboratório!\n\n💬 Comente aqui embaixo qual ferramenta você mais usa!\n\nSiga @celsosre\ndevyra.com.br"
+            });
+
+            slidesData = extractedSlides;
+            currentSlideIndex = 0;
+            renderThumbnails();
+            loadSlideIntoForm(0);
+            updatePreview();
+            generateCaption();
+            alert("Slides gerados com sucesso a partir do seu texto!");
+        }
 
         function setSlide(index) {
             currentSlideIndex = index;
             loadSlideIntoForm(currentSlideIndex);
             updatePreview();
             updateNavigationButtons();
-            updateThumbnails();
+            renderThumbnails();
         }
 
         function changeSlide(direction) {
@@ -186,6 +284,7 @@
             slidesData[currentSlideIndex].title = document.getElementById('input-title').value;
             slidesData[currentSlideIndex].body = document.getElementById('input-body').value;
             updatePreview();
+            generateCaption();
         }
 
         function updatePreview() {
@@ -202,36 +301,55 @@
             document.getElementById('btn-next').disabled = currentSlideIndex === slidesData.length - 1;
         }
 
-        function updateThumbnails() {
-            const buttons = document.querySelectorAll('.slide-thumb-btn');
-            buttons.forEach((btn, idx) => {
-                if (idx === currentSlideIndex) {
-                    btn.className = "slide-thumb-btn py-2.5 text-xs font-semibold rounded-lg bg-amber-500 text-slate-950 transition";
-                } else {
-                    btn.className = "slide-thumb-btn py-2.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
-                }
+        function renderThumbnails() {
+            const container = document.getElementById('thumbs-container');
+            container.innerHTML = '';
+            slidesData.forEach((slide, idx) => {
+                const btn = document.createElement('button');
+                btn.onclick = () => setSlide(idx);
+                btn.className = `py-2 text-[10px] font-semibold rounded-lg transition truncate px-1 ${idx === currentSlideIndex ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`;
+                btn.innerText = `${idx + 1}. ${slide.title.substring(0, 10)}...`;
+                container.appendChild(btn);
             });
+            updateNavigationButtons();
         }
 
-        // Função para desenhar a imagem do logo real no Canvas durante o download
+        // Gera a legenda inteligente com base no conteúdo dos slides e adiciona hashtags de SRE/Linux
+        function generateCaption() {
+            const mainTitle = slidesData[0]?.title || "Infraestrutura Linux";
+            const caption = `🚀 ${mainTitle}\n\n` +
+                `Dominar a investigação de problemas e o diagnóstico de rede é essencial no dia a dia de um SRE e SysAdmin.\n\n` +
+                `Neste carrossel, separamos os pontos principais:\n` +
+                slidesData.slice(1, -1).map(s => `🔹 ${s.title}`).join('\n') + `\n\n` +
+                `💡 Lembre-se: execute sempre em ambiente de laboratório e valide o impacto antes de aplicar em produção!\n\n` +
+                `💬 Qual ferramenta ou comando você mais utiliza nos seus troubleshooting? Comente aqui embaixo! 👇\n\n` +
+                `📌 Salve para consultar depois e siga para mais conteúdos:\n` +
+                `👉 @celsosre\n🌐 devyra.com.br\n\n` +
+                `#Linux #SRE #DevOps #SysAdmin #Redes #Network #Ubuntu #Debian #Devyra #ComandosLinux`;
+            
+            document.getElementById('output-caption').value = caption;
+        }
+
+        function copyCaption() {
+            const captionBox = document.getElementById('output-caption');
+            captionBox.select();
+            document.execCommand('copy');
+            alert("Legenda copiada para a área de transferência!");
+        }
+
+        // Função para download individual
         function downloadSlideAsPNG() {
             const btn = event.currentTarget;
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<span>⏳</span> Gerando PNG em alta resolução...';
+            btn.innerHTML = '<span>⏳</span> Gerando...';
             btn.disabled = true;
 
             const logoImg = new Image();
             logoImg.crossOrigin = "anonymous";
             logoImg.src = "logo.png";
 
-            logoImg.onload = function() {
-                generateCanvasImage(logoImg, btn, originalText);
-            };
-
-            logoImg.onerror = function() {
-                // Caso ocorra falha ao carregar logo.png localmente, gera sem travar
-                generateCanvasImage(null, btn, originalText);
-            };
+            logoImg.onload = () => generateCanvasImage(logoImg, btn, originalText);
+            logoImg.onerror = () => generateCanvasImage(null, btn, originalText);
         }
 
         function generateCanvasImage(logoImg, btn, originalText) {
@@ -241,7 +359,6 @@
                 canvas.height = 1350;
                 const ctx = canvas.getContext('2d');
 
-                // Fundo Gradiente
                 const grad = ctx.createLinearGradient(0, 0, 1080, 1350);
                 grad.addColorStop(0, '#090d16');
                 grad.addColorStop(0.5, '#0f172a');
@@ -249,12 +366,10 @@
                 ctx.fillStyle = grad;
                 ctx.fillRect(0, 0, 1080, 1350);
 
-                // Borda interna decorativa
                 ctx.strokeStyle = '#1e293b';
                 ctx.lineWidth = 16;
                 ctx.strokeRect(8, 8, 1064, 1334);
 
-                // Cabeçalho - Linha divisória inferior
                 ctx.strokeStyle = 'rgba(217, 119, 6, 0.2)';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
@@ -262,7 +377,6 @@
                 ctx.lineTo(1000, 160);
                 ctx.stroke();
 
-                // Logotipo Real ou Fallback
                 if (logoImg) {
                     ctx.save();
                     ctx.beginPath();
@@ -279,7 +393,6 @@
                     ctx.stroke();
                 }
 
-                // Textos do Cabeçalho
                 ctx.fillStyle = '#fbbf24';
                 ctx.font = 'bold 28px Inter, sans-serif';
                 ctx.fillText('CELSOSRE', 180, 85);
@@ -288,7 +401,6 @@
                 ctx.font = '500 18px Inter, sans-serif';
                 ctx.fillText('SÉRIE SRE DO ZERO', 180, 115);
 
-                // Número do Slide (Badge)
                 ctx.fillStyle = 'rgba(217, 119, 6, 0.1)';
                 ctx.beginPath();
                 ctx.roundRect(910, 65, 100, 48, 24);
@@ -303,17 +415,14 @@
                 ctx.fillText(`Slide 0${currentSlideIndex + 1}`, 960, 97);
                 ctx.textAlign = 'left';
 
-                // Título Principal
                 ctx.fillStyle = '#ffffff';
-                ctx.font = '800 52px Inter, sans-serif';
-                wrapText(ctx, slidesData[currentSlideIndex].title, 80, 310, 920, 64);
+                ctx.font = '800 50px Inter, sans-serif';
+                wrapText(ctx, slidesData[currentSlideIndex].title, 80, 280, 920, 60);
 
-                // Corpo do Texto
                 ctx.fillStyle = '#cbd5e1';
-                ctx.font = '400 32px Inter, sans-serif';
-                wrapText(ctx, slidesData[currentSlideIndex].body, 80, 530, 920, 48);
+                ctx.font = '400 30px Inter, sans-serif';
+                wrapText(ctx, slidesData[currentSlideIndex].body, 80, 480, 920, 44);
 
-                // Rodapé - Linha divisória superior
                 ctx.strokeStyle = '#1e293b';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
@@ -321,7 +430,6 @@
                 ctx.lineTo(1000, 1230);
                 ctx.stroke();
 
-                // Rodapé - Textos
                 ctx.fillStyle = '#fbbf24';
                 ctx.font = '600 24px Inter, sans-serif';
                 ctx.fillText('@celsosre', 80, 1280);
@@ -332,7 +440,6 @@
                 ctx.fillText('devyra.com.br', 1000, 1280);
                 ctx.textAlign = 'left';
 
-                // Download da Imagem
                 const imageURL = canvas.toDataURL('image/png');
                 const link = document.createElement('a');
                 link.href = imageURL;
@@ -347,11 +454,94 @@
                 console.error(err);
                 btn.innerHTML = originalText;
                 btn.disabled = false;
-                alert("Erro ao exportar imagem. Tente novamente.");
+                alert("Erro ao exportar imagem.");
             }
         }
 
-        // Função auxiliar para quebra de linhas no Canvas 2D nativo
+        // Função para download em lote de todos os slides
+        async function downloadAllSlides() {
+            for (let i = 0; i < slidesData.length; i++) {
+                setSlide(i);
+                await new Promise(resolve => setTimeout(resolve, 400));
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = 1080;
+                canvas.height = 1350;
+                const ctx = canvas.getContext('2d');
+
+                const grad = ctx.createLinearGradient(0, 0, 1080, 1350);
+                grad.addColorStop(0, '#090d16');
+                grad.addColorStop(0.5, '#0f172a');
+                grad.addColorStop(1, '#05070c');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, 1080, 1350);
+
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 16;
+                ctx.strokeRect(8, 8, 1064, 1334);
+
+                ctx.strokeStyle = 'rgba(217, 119, 6, 0.2)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(80, 160);
+                ctx.lineTo(1000, 160);
+                ctx.stroke();
+
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = 'bold 28px Inter, sans-serif';
+                ctx.fillText('CELSOSRE', 180, 85);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '500 18px Inter, sans-serif';
+                ctx.fillText('SÉRIE SRE DO ZERO', 180, 115);
+
+                ctx.fillStyle = 'rgba(217, 119, 6, 0.1)';
+                ctx.beginPath();
+                ctx.roundRect(910, 65, 100, 48, 24);
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(217, 119, 6, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = 'bold 22px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`Slide 0${i + 1}`, 960, 97);
+                ctx.textAlign = 'left';
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '800 50px Inter, sans-serif';
+                wrapText(ctx, slidesData[i].title, 80, 280, 920, 60);
+
+                ctx.fillStyle = '#cbd5e1';
+                ctx.font = '400 30px Inter, sans-serif';
+                wrapText(ctx, slidesData[i].body, 80, 480, 920, 44);
+
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(80, 1230);
+                ctx.lineTo(1000, 1230);
+                ctx.stroke();
+
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = '600 24px Inter, sans-serif';
+                ctx.fillText('@celsosre', 80, 1280);
+                ctx.fillStyle = '#64748b';
+                ctx.font = '500 24px Inter, sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText('devyra.com.br', 1000, 1280);
+                ctx.textAlign = 'left';
+
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = `celsosre-carrossel-slide-0${i + 1}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            alert("Todos os slides foram baixados com sucesso!");
+        }
+
         function wrapText(context, text, x, y, maxWidth, lineHeight) {
             const paragraphs = text.split('\n');
             let currentY = y;
